@@ -1,61 +1,64 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <ctype.h>
-#include <complex.h>
-#include <time.h>
+#include <iostream>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+#include <cctype>
+#include <complex>
+#include <ctime>
+#include <sstream>
+#include <vector>
+#include <limits>
+#include <iomanip>
 
-// This structure intends to represent a fraction.
-typedef struct {
+using namespace std;
+
+struct Fraction {
     int numerator;
     int denominator;
-} Fraction;
+};
 
-// Function declarations and their definitions
 void title() {
-    printf("\n\n\n");
-    printf("      ##********************##\n");
-    printf("      #                      #\n");
-    printf("      *   Mathira Mathibay   *\n");
-    printf("      #                      #\n");
-    printf("      ##********************##\n");
+    cout << "\n\n\n";
+    cout << "      ##********************##\n";
+    cout << "      #                      #\n";
+    cout << "      *   Mathira Mathibay   *\n";
+    cout << "      #                      #\n";
+    cout << "      ##********************##\n";
 }
 
 void credits() {
-    printf("     By: Mikay, Mav, and Elaine\n\n\n");
+    cout << "     By: Mikay, Mav, and Elaine\n\n\n";
 }
 
 void menu() {
-    printf("Main Menu\n\n");
+    cout << "Main Menu\n\n";
 }
 
 void polynomialFunction() {
-    printf("1. Polynomial Function\n");
+    cout << "1. Polynomial Function\n";
 }
 
 void leadingCoefficient() {
-    printf("Leading Coefficient: ");
+    cout << "Leading Coefficient: ";
 }
 
-int strictCoefficient(float *num) {
-    int result = scanf("%f", num);
-    while (result != 1 || *num == 0) {
-        while (getchar() != '\n');
-        system("cls");
-        printf("Your input is invalid. Please enter a number: ");
-        result = scanf("%f", num);
+int strictCoefficient(float &num) {
+    while (!(cin >> num) || num == 0) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        system("CLS");
+        cout << "Your input is invalid. Please enter a number: ";
     }
     return 0;
 }
 
-int Coefficient(float *num) {
-    int result = scanf("%f", num);
-    while (result != 1) {
-        while (getchar() != '\n');
-        system("cls");
-        printf("Your input is invalid. Please enter a number: ");
-        result = scanf("%f", num);
+int Coefficient(float &num) {
+    while (!(cin >> num)) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        system("CLS");
+        cout << "Your input is invalid. Please enter a number: ";
     }
     return 0;
 }
@@ -68,46 +71,49 @@ int gcd(int a, int b) {
 
 Fraction simplify(Fraction frac) {
     int divisor = gcd(frac.numerator, frac.denominator);
-    frac.numerator /= divisor;
-    frac.denominator /= divisor;
+    if(divisor != 0) {
+        frac.numerator /= divisor;
+        frac.denominator /= divisor;
+    }
     return frac;
 }
 
 Fraction inputFraction() {
     Fraction frac;
-    printf("Enter numerator: ");
-    scanf("%d", &frac.numerator);
-    printf("Enter denominator: ");
-    scanf("%d", &frac.denominator);
+    cout << "Enter numerator: ";
+    cin >> frac.numerator;
+    cout << "Enter denominator: ";
+    cin >> frac.denominator;
     return simplify(frac);
 }
 
 Fraction inputDecimal() {
     float decimal;
-    printf("Enter a decimal number: ");
-    scanf("%f", &decimal);
+    cout << "Enter a decimal number: ";
+    cin >> decimal;
     int denominator = 10000;
-    int numerator = (int)(decimal * denominator);
-    Fraction frac = {numerator, denominator};
+    int numerator = static_cast<int>(decimal * denominator);
+    Fraction frac = { numerator, denominator };
     return simplify(frac);
 }
 
-void displayFraction(Fraction frac) {
-    if (frac.denominator < 0) {
-        frac.numerator = -frac.numerator;
-        frac.denominator = -frac.denominator;
+void displayFraction(const Fraction &frac) {
+    Fraction f = frac;
+    if (f.denominator < 0) {
+        f.numerator = -f.numerator;
+        f.denominator = -f.denominator;
     }
-    if (frac.denominator == 1) {
-        printf("%d", frac.numerator);
+    if (f.denominator == 1) {
+        cout << f.numerator;
     } else {
-        printf("%d/%d", frac.numerator, frac.denominator);
+        cout << f.numerator << "/" << f.denominator;
     }
 }
 
 Fraction floatToFraction(double num) {
     int denominator = 1000000; // Increased precision
-    int numerator = (int)(num * denominator);
-    Fraction frac = {numerator, denominator};
+    int numerator = static_cast<int>(num * denominator);
+    Fraction frac = { numerator, denominator };
     return simplify(frac);
 }
 
@@ -124,13 +130,13 @@ Fraction multiplyFraction(Fraction frac, int num) {
 }
 
 int compareFloats(double a, double b, int significantFigures) {
-    float tolerance = pow(10, -significantFigures);
+    double tolerance = pow(10, -significantFigures);
     return fabs(a - b) < tolerance;
 }
 
-int isValidNumber(char *str) {
-    for (int i = 0; i < strlen(str); i++) {
-        if (!isdigit(str[i]) && str[i] != '.' && str[i] != '/' && str[i] != '-') {
+int isValidNumber(const string &str) {
+    for (char ch : str) {
+        if (!isdigit(ch) && ch != '.' && ch != '/' && ch != '-') {
             return 0;
         }
     }
@@ -142,33 +148,35 @@ double roundToSignificantFigures(double num, int significantFigures) {
         return 0;
     }
     double d = ceil(log10(fabs(num)));
-    int power = significantFigures - (int)d;
+    int power = significantFigures - static_cast<int>(d);
     double magnitude = pow(10, power);
-    long shifted = round(num * magnitude);
+    long shifted = lround(num * magnitude);
     return shifted / magnitude;
 }
 
-void formatNumber(double num, int significantFigures, char *buffer) {
-    snprintf(buffer, 20, "%.*f", significantFigures, num); // This changes %g to %f.
+void formatNumber(double num, int significantFigures, string &buffer) {
+    ostringstream oss;
+    oss << fixed << setprecision(significantFigures) << num;
+    buffer = oss.str();
 }
 
-void solvePolynomial(float *coefficients, int degree, int significantFigures) {
+void solvePolynomial(const vector<double>& coefficients, int degree, int significantFigures) {
     const double PI = 4 * atan(1);
-    double complex roots[degree];
-    double complex new_roots[degree];
-    double complex epsilon = 1e-12 + 1e-12 * I; // Increased precision
+    // Use vectors instead of variable-length arrays.
+    vector<complex<double>> roots(degree), new_roots(degree);
+    complex<double> epsilon(1e-12, 1e-12);
 
     for (int i = 0; i < degree; i++) {
-        roots[i] = cexp(2 * PI * I * i / degree);
+        roots[i] = exp(complex<double>(0, 2 * PI * i / degree));
     }
 
     int iterations = 0;
-    int max_iterations = 10000; // Increased maximum iterations
+    int max_iterations = 10000;
     while (iterations < max_iterations) {
-        int converged = 1;
+        bool converged = true;
         for (int i = 0; i < degree; i++) {
-            double complex numerator = coefficients[degree];
-            double complex denominator = 1.0;
+            complex<double> numerator = coefficients[degree];
+            complex<double> denominator = 1.0;
             for (int j = 0; j < degree; j++) {
                 if (i != j) {
                     denominator *= (roots[i] - roots[j]);
@@ -178,8 +186,8 @@ void solvePolynomial(float *coefficients, int degree, int significantFigures) {
                 numerator = numerator * roots[i] + coefficients[j];
             }
             new_roots[i] = roots[i] - numerator / denominator;
-            if (cabs(new_roots[i] - roots[i]) > cabs(epsilon)) {
-                converged = 0;
+            if (abs(new_roots[i] - roots[i]) > abs(epsilon)) {
+                converged = false;
             }
         }
         for (int i = 0; i < degree; i++) {
@@ -191,415 +199,401 @@ void solvePolynomial(float *coefficients, int degree, int significantFigures) {
         iterations++;
     }
 
-    int multiplicities[degree];
-    for (int i = 0; i < degree; i++) {
-        multiplicities[i] = 1;
-    }
-    for (int i = 0; i < degree; i++) {
-        for (int j = i + 1; j < degree; j++) {
-            if (cabs(roots[i] - roots[j]) < cabs(epsilon)) {
+    // Merge roots with similar values.
+    vector<int> multiplicities(degree, 1);
+    int rcount = degree;
+    for (int i = 0; i < rcount; i++) {
+        for (int j = i + 1; j < rcount; j++) {
+            if (abs(roots[i] - roots[j]) < abs(epsilon)) {
                 multiplicities[i]++;
-                for (int k = j; k < degree - 1; k++) {
+                for (int k = j; k < rcount - 1; k++) {
                     roots[k] = roots[k + 1];
                     multiplicities[k] = multiplicities[k + 1];
                 }
-                degree--;
+                rcount--;
                 j--;
             }
         }
     }
 
-    if (degree == 1) {
-        printf("The solution is:\n");
+    if (rcount == 1) {
+        cout << "The solution is:\n";
     } else {
-        printf("The solutions are:\n");
+        cout << "The solutions are:\n";
     }
-    for (int i = 0; i < degree; i++) {
-        double realPart = creal(roots[i]);
-        double imagPart = cimag(roots[i]);
+    for (int i = 0; i < rcount; i++) {
+        double realPart = roots[i].real();
+        double imagPart = roots[i].imag();
         if (isinf(realPart) || isinf(imagPart)) {
-            printf("The solution is undefined or infinite.\n");
+            cout << "The solution is undefined or infinite.\n";
             continue;
         }
         double roundedRealPart = roundToSignificantFigures(realPart, significantFigures);
         double roundedImagPart = roundToSignificantFigures(imagPart, significantFigures);
 
-        char realBuffer[20], imagBuffer[20];
+        string realBuffer, imagBuffer;
         formatNumber(roundedRealPart, significantFigures, realBuffer);
         formatNumber(roundedImagPart, significantFigures, imagBuffer);
 
-        if (compareFloats(realPart, roundedRealPart, significantFigures) && compareFloats(imagPart, roundedImagPart, significantFigures)) {
+        if (compareFloats(realPart, roundedRealPart, significantFigures) &&
+            compareFloats(imagPart, roundedImagPart, significantFigures)) {
             if (imagPart == 0) {
-                if (realPart == (int)realPart) {
-                    printf("x = %.0f\n", realPart);
+                if (realPart == static_cast<int>(realPart)) {
+                    cout << "x = " << fixed << setprecision(0) << realPart << "\n";
                 } else {
-                    Fraction frac = { (int)(realPart * 1000000), 1000000 };
+                    Fraction frac = { static_cast<int>(realPart * 1000000), 1000000 };
                     frac = simplify(frac);
-                    printf("x = ");
+                    cout << "x = ";
                     displayFraction(frac);
-                    printf("\n");
+                    cout << "\n";
                 }
             } else {
                 if (imagPart > 0) {
-                    printf("x = %s + %si\n", realBuffer, imagBuffer);
+                    cout << "x = " << realBuffer << " + " << imagBuffer << "i\n";
                 } else {
-                    printf("x = %s - %si\n", realBuffer, imagBuffer + 1); // Skip the negative sign
+                    // Skip the negative sign in imagBuffer since we already output '-'
+                    cout << "x = " << realBuffer << " - " << (imagBuffer[0] == '-' ? imagBuffer.substr(1) : imagBuffer) << "i\n";
                 }
             }
         } else {
             if (imagPart == 0) {
-                if (realPart == (int)realPart) {
-                    printf("x is approximately equal to %.0f\n", realPart);
+                if (realPart == static_cast<int>(realPart)) {
+                    cout << "x is approximately equal to " << fixed << setprecision(0) << realPart << "\n";
                 } else {
-                    Fraction frac = { (int)(realPart * 1000000), 1000000 };
+                    Fraction frac = { static_cast<int>(realPart * 1000000), 1000000 };
                     frac = simplify(frac);
-                    printf("x is approximately equal to ");
+                    cout << "x is approximately equal to ";
                     displayFraction(frac);
-                    printf("\n");
+                    cout << "\n";
                 }
             } else {
                 if (imagPart > 0) {
-                    printf("x is approximately equal to %s + %si\n", realBuffer, imagBuffer);
+                    cout << "x is approximately equal to " << realBuffer << " + " << imagBuffer << "i\n";
                 } else {
-                    printf("x is approximately equal to %s - %si\n", realBuffer, imagBuffer + 1); // Skip the negative sign
+                    cout << "x is approximately equal to " << realBuffer << " - " << (imagBuffer[0] == '-' ? imagBuffer.substr(1) : imagBuffer) << "i\n";
                 }
             }
         }
 
         if (multiplicities[i] > 1) {
-            printf(" (of multiplicity %d)", multiplicities[i]);
+            cout << " (of multiplicity " << multiplicities[i] << ")";
         }
-        printf("\n");
+        cout << "\n";
     }
 }
 
-void displayDerivativesAndAntiderivative(float *coefficients, int degree) {
+void displayDerivativesAndAntiderivative(vector<double> coefficients, int degree) {
+    // We make a copy of the coefficients so that in-place modifications do not affect the rest of the program.
+    vector<double> coeff = coefficients;
+
     // First derivative f'(x)
-    printf("First derivative: f'(x) = ");
-    int firstDerivativeZero = 1;
+    cout << "First derivative: f'(x) = ";
+    bool firstDerivativeZero = true;
     for (int i = degree; i > 1; i--) {
-        if (coefficients[i] != 0) {
-            firstDerivativeZero = 0;
+        if (coeff[i] != 0) {
+            firstDerivativeZero = false;
             if (i != degree) {
-                if (coefficients[i] > 0) {
-                    printf(" + ");
+                if (coeff[i] > 0) {
+                    cout << " + ";
                 } else {
-                    printf(" - ");
-                    coefficients[i] = -coefficients[i];  // Make it positive for printing
+                    cout << " - ";
+                    coeff[i] = -coeff[i];  // Make it positive for printing
                 }
             }
-            Fraction frac = floatToFraction(coefficients[i] * i);
+            Fraction frac = floatToFraction(coeff[i] * i);
             if (frac.denominator != 1) {
-                printf("(");
+                cout << "(";
                 displayFraction(frac);
-                printf(")");
+                cout << ")";
             } else if (frac.numerator != 1) {
                 displayFraction(frac);
             }
             if (i > 2) {
-                printf("x^%d", i - 1);  // Print x^degree when degree > 1
+                cout << "x^" << (i - 1);
             } else if (i == 2){
-                printf("x");  // Print x when degree = 1
+                cout << "x";
             }
         }
     }
-    if (coefficients[1] != 0) {
-        if (coefficients[1] > 0) {
-            printf(" + ");
+    if (coeff[1] != 0) {
+        if (coeff[1] > 0) {
+            cout << " + ";
         } else {
-            printf(" - ");
-            coefficients[1] = -coefficients[1];  // Make it positive for printing
+            cout << " - ";
+            coeff[1] = -coeff[1];  // Make it positive for printing
         }
-        Fraction frac = floatToFraction(coefficients[1]);
+        Fraction frac = floatToFraction(coeff[1]);
         displayFraction(frac);
     }
-    if (firstDerivativeZero && coefficients[1] == 0) {
-        printf("0");
+    if (firstDerivativeZero && coeff[1] == 0) {
+        cout << "0";
     }
-    printf("\n");
+    cout << "\n";
 
     // Second derivative f''(x)
-    printf("Second derivative: f''(x) = ");
-    int secondDerivativeZero = 1;
+    cout << "Second derivative: f''(x) = ";
+    bool secondDerivativeZero = true;
     for (int i = degree; i > 1; i--) {
-        if (coefficients[i] != 0) {
-            secondDerivativeZero = 0;
+        if (coeff[i] != 0) {
+            secondDerivativeZero = false;
             if (i != degree) {
-                if (coefficients[i] > 0) {
-                    printf(" + ");
+                if (coeff[i] > 0) {
+                    cout << " + ";
                 } else {
-                    printf(" - ");
-                    coefficients[i] = -coefficients[i];  // Make it positive for printing
+                    cout << " - ";
+                    coeff[i] = -coeff[i];
                 }
             }
-            Fraction frac = floatToFraction(coefficients[i] * i * (i - 1));
+            Fraction frac = floatToFraction(coeff[i] * i * (i - 1));
             if (frac.denominator != 1 && i > 2) {
-                printf("(");
+                cout << "(";
                 displayFraction(frac);
-                printf(")");
+                cout << ")";
             } else if (frac.numerator != 1) {
                 displayFraction(frac);
             }
             if (i > 3) {
-                printf("x^%d", i - 2);  // Print x^degree when degree > 1
+                cout << "x^" << (i - 2);
             } else if (i == 3){
-                printf("x");  // Print x when degree = 1
+                cout << "x";
             }
         }
     }
     if (secondDerivativeZero) {
-        printf("0");
+        cout << "0";
     }
-    printf("\n");
+    cout << "\n";
 
     // Antiderivative F(x) = integral of f(x)
-    printf("Antiderivative: F(x) = ");
-    int antiderivativeZero = 1;
+    cout << "Antiderivative: F(x) = ";
+    bool antiderivativeZero = true;
     for (int i = degree; i >= 0; i--) {
-        if (coefficients[i] != 0) {
-            antiderivativeZero = 0;
+        if (coeff[i] != 0) {
+            antiderivativeZero = false;
             if (i != degree) {
-                if (coefficients[i] > 0) {
-                    printf(" + ");
+                if (coeff[i] > 0) {
+                    cout << " + ";
                 } else {
-                    printf(" - ");
-                    coefficients[i] = -coefficients[i];  // Make it positive for printing
+                    cout << " - ";
+                    coeff[i] = -coeff[i];
                 }
             }
-            // Divide the coefficient by (i + 1) because of the reverse power rule of antidifferentiation.
-            Fraction frac = floatToFraction(coefficients[i] / (i + 1.0));
+            Fraction frac = floatToFraction(coeff[i] / (i + 1.0));
             if (frac.denominator != 1) {
-                printf("(");
+                cout << "(";
                 displayFraction(frac);
-                printf(")");
+                cout << ")";
             } else if (frac.numerator != 1) {
                 displayFraction(frac);
             }
             if (i > 0) {
-                printf("x^%d", i + 1);  // Print x^degree when degree > 1
+                cout << "x^" << (i + 1);
             }
             else {
-                printf("x");  // Print x when degree = 1
+                cout << "x";
             }
         }
     }
     if (antiderivativeZero) {
-        printf("0");
+        cout << "0";
     }
-    printf(" + C\n");
+    cout << " + C\n";
+}
+
+double fractionToFloat(const string &fracStr) {
+    int numerator, denominator;
+    char slash;
+    sscanf(fracStr.c_str(), "%d/%d", &numerator, &denominator);
+    return static_cast<double>(numerator) / denominator;
 }
 
 void handlePolynomial(int degree, int significantFigures) {
-    Fraction *coefficients = (Fraction *)malloc((degree + 1) * sizeof(Fraction));
-    if (coefficients == NULL) {
-        system("cls");
-        printf("I cannot handle this. I have to quit the program :').\n");
-        return;
-    }
-
+    // Use a vector to store coefficients (as Fractions) for the polynomial.
+    vector<Fraction> coefficients(degree + 1);
     for (int i = degree; i >= 0; i--) {
-        char input[20];
+        string input;
         do {
-            printf("Coefficient of x^%d (You can enter input as a fraction or decimal): ", i);
-            scanf("%s", input);
-            if (!isValidNumber(input) || (i == degree && atof(input) == 0)) {
-                printf("Invalid input. Please enter a valid number and ensure the leading term is not 0.\n");
-            }
-        } while (!isValidNumber(input) || (i == degree && atof(input) == 0));
+            cout << "Coefficient of x^" << i << " (You can enter input as a fraction or decimal): ";
+            cin >> input;
+            if (!isValidNumber(input) || (i == degree && atof(input.c_str()) == 0))
+                cout << "Invalid input. Please enter a valid number and ensure the leading term is not 0.\n";
+        } while (!isValidNumber(input) || (i == degree && atof(input.c_str()) == 0));
 
-        if (strchr(input, '/') != NULL) {
-            sscanf(input, "%d/%d", &coefficients[i].numerator, &coefficients[i].denominator);
-            coefficients[i] = simplify(coefficients[i]);
+        if (input.find('/') != string::npos) {
+            int num, den;
+            sscanf(input.c_str(), "%d/%d", &num, &den);
+            coefficients[i] = simplify({ num, den });
         } else {
-            float decimal;
-            sscanf(input, "%f", &decimal);
+            float decimal = stof(input);
             int denominator = 1000000; // Increased precision
-            int numerator = (int)(decimal * denominator);
-            Fraction frac = {numerator, denominator};
+            int numerator = static_cast<int>(decimal * denominator);
+            Fraction frac = { numerator, denominator };
             coefficients[i] = simplify(frac);
         }
     }
 
-    printf("\nThe polynomial is: f(x) = ");
+    cout << "\nThe polynomial is: f(x) = ";
     for (int i = degree; i >= 0; i--) {
         if (coefficients[i].numerator != 0) {
             if (i != degree) {
                 if (coefficients[i].numerator > 0) {
-                    printf(" + ");
+                    cout << " + ";
                 } else {
-                    printf(" - ");
+                    cout << " - ";
                     coefficients[i].numerator = -coefficients[i].numerator;
                 }
             }
             if (coefficients[i].numerator != 1 || i == 0) {
                 if (coefficients[i].denominator == 1) {
-                    printf("%d", coefficients[i].numerator);
+                    cout << coefficients[i].numerator;
                 } else {
-                    Fraction frac = {coefficients[i].numerator, coefficients[i].denominator};
-                    frac = simplify(frac);
-                    if (i == 0) {
-                        displayFraction(frac);
+                    if(i == 0) {
+                        displayFraction(coefficients[i]);
                     } else {
-                        printf("(");
-                        displayFraction(frac);
-                        printf(")");
+                        cout << "(";
+                        displayFraction(coefficients[i]);
+                        cout << ")";
                     }
                 }
             }
             if (i > 0) {
-                printf("x");
+                cout << "x";
                 if (i > 1) {
-                    printf("^%d", i);
+                    cout << "^" << i;
                 }
             }
         }
     }
-    printf(".\n");
+    cout << ".\n";
 
-    // Display properties of the polynomial function of degree n.
-    printf("The highest degree of the polynomial is %d.\n", degree);
-    printf("The number of turning points for the polynomial is at most %d.\n", degree - 1);
-    printf("In finding the y-intercept, we simply substitute 0 for x.\n");
-    printf("y = ");
+    cout << "The highest degree of the polynomial is " << degree << ".\n";
+    cout << "The number of turning points for the polynomial is at most " << degree - 1 << ".\n";
+    cout << "In finding the y-intercept, we simply substitute 0 for x.\n";
+    cout << "y = ";
     displayFraction(coefficients[0]);
-    printf("\n\n");
+    cout << "\n\n";
 
     if (degree % 2 == 0) {
         if (coefficients[degree].numerator > 0) {
-            printf("Even Degree and Positive Leading Coefficient\n");
-            printf("- The end behavior of the graph rises to the left and the right.\n\n");
+            cout << "Even Degree and Positive Leading Coefficient\n";
+            cout << "- The end behavior of the graph rises to the left and the right.\n\n";
         } else {
-            printf("Even Degree and Negative Leading Coefficient\n");
-            printf("- The end behavior of the graph falls to the left and the right.\n\n");
+            cout << "Even Degree and Negative Leading Coefficient\n";
+            cout << "- The end behavior of the graph falls to the left and the right.\n\n";
         }
     } else {
         if (coefficients[degree].numerator > 0) {
-            printf("Odd Degree and Positive Leading Coefficient\n");
-            printf("- The end behavior of the graph falls to the left and rises to the right.\n\n");
+            cout << "Odd Degree and Positive Leading Coefficient\n";
+            cout << "- The end behavior of the graph falls to the left and rises to the right.\n\n";
         } else {
-            printf("Odd Degree and Negative Leading Coefficient\n");
-            printf("- The end behavior of the graph rises to the left and falls to the right.\n\n");
+            cout << "Odd Degree and Negative Leading Coefficient\n";
+            cout << "- The end behavior of the graph rises to the left and falls to the right.\n\n";
         }
     }
 
-    // Obtain and display the zeroes of the polynomial.
-    float *coeffs = (float *)malloc((degree + 1) * sizeof(float));
+    // Convert the Fraction coefficients to floating-point for further processing.
+    vector<double> coeffs(degree + 1);
     for (int i = 0; i <= degree; i++) {
-        coeffs[i] = (float)coefficients[i].numerator / coefficients[i].denominator;
+        coeffs[i] = static_cast<double>(coefficients[i].numerator) / coefficients[i].denominator;
     }
     solvePolynomial(coeffs, degree, significantFigures);
-
-    // Display derivatives up to second order and the antiderivative.
     displayDerivativesAndAntiderivative(coeffs, degree);
-
-    free(coeffs);
-    free(coefficients);
-}
-
-double fractionToFloat(const char *fracStr) {
-    int numerator, denominator;
-    sscanf(fracStr, "%d/%d", &numerator, &denominator);
-    return (double)numerator / denominator;
 }
 
 void playFindTheRoots(int degree) {
-    srand(time(NULL)); // Seed the random number generator.
+    srand(static_cast<unsigned int>(time(nullptr))); // Seed the random number generator.
 
     // Generate random roots (either integers or fractions).
-    double roots[degree];
-    int multiplicities[degree];
+    vector<double> roots(degree);
+    vector<int> multiplicities(degree, 1);
     for (int i = 0; i < degree; i++) {
         int isFraction = rand() % 2;
         if (isFraction) {
             int numerator = rand() % 10 + 1;
             int denominator = rand() % 10 + 1;
-            roots[i] = (double)numerator / denominator;
+            roots[i] = static_cast<double>(numerator) / denominator;
         } else {
             roots[i] = rand() % 10 + 1;
         }
-        multiplicities[i] = 1; // Initialize multiplicities to 1.
+        multiplicities[i] = 1;
     }
 
     // Construct the polynomial from the generated roots.
-    double coefficients[degree + 1];
-    coefficients[0] = 1; // Leading coefficient.
+    vector<double> coefficients(degree + 1, 0.0);
+    coefficients[0] = 1;
     for (int i = 1; i <= degree; i++) {
         coefficients[i] = 0;
     }
 
     for (int i = 0; i < degree; i++) {
         for (int j = degree; j > 0; j--) {
-            coefficients[j] = coefficients[j] * -roots[i] + coefficients[j - 1];
+            coefficients[j] = coefficients[j] * (-roots[i]) + coefficients[j - 1];
         }
         coefficients[0] *= -roots[i];
     }
 
-    printf("\nThe polynomial is: f(x) = ");
+    cout << "\nThe polynomial is: f(x) = ";
     for (int i = degree; i >= 0; i--) {
         if (coefficients[i] != 0) {
             if (i != degree) {
                 if (coefficients[i] > 0) {
-                    printf(" + ");
+                    cout << " + ";
                 } else {
-                    printf(" - ");
+                    cout << " - ";
                     coefficients[i] = -coefficients[i];
                 }
             }
             if (coefficients[i] != 1 || i == 0) {
-                if (coefficients[i] == (int)coefficients[i]) {
-                    printf("%.0f", coefficients[i]);
+                if (coefficients[i] == static_cast<int>(coefficients[i])) {
+                    cout << static_cast<int>(coefficients[i]);
                 } else if (i != 0) {
-                    Fraction frac = { (int)(coefficients[i] * 10000), 10000 };
+                    Fraction frac = { static_cast<int>(coefficients[i] * 10000), 10000 };
                     frac = simplify(frac);
-                    printf("(");
+                    cout << "(";
                     displayFraction(frac);
-                    printf(")");
+                    cout << ")";
                 } else {
-                    Fraction frac = { (int)(coefficients[i] * 10000), 10000 };
+                    Fraction frac = { static_cast<int>(coefficients[i] * 10000), 10000 };
                     frac = simplify(frac);
                     displayFraction(frac);
                 }
             }
             if (i > 0) {
-                printf("x");
+                cout << "x";
                 if (i > 1) {
-                    printf("^%d", i);
+                    cout << "^" << i;
                 }
             }
         }
     }
-    printf(".\n");
-    if (degree > 1){
-        printf("Please take note that some of the roots are rounded off or simplified.\n");
+    cout << ".\n";
+    if (degree > 1) {
+        cout << "Please take note that some of the roots are rounded off or simplified.\n";
     }
-    printf("A deduction of 5 points will be incurred for every wrong attempt.\n");
+    cout << "A deduction of 5 points will be incurred for every wrong attempt.\n";
 
-    // Initialize attempts and scoring.
     int attempts = 2 * degree;
     int score = 10 * degree;
     int correctRoots = 0;
-    int usedRoots[degree];
-    memset(usedRoots, 0, sizeof(usedRoots)); // Initialize used roots count to 0.
-    printf("You have %d attempts to find the roots.\n", attempts);
+    vector<int> usedRoots(degree, 0);
+    cout << "You have " << attempts << " attempts to find the roots.\n";
 
-    // Ask the user to find the roots.
     for (int attempt = 0; attempt < attempts; attempt++) {
-        char userRoot[70];
-        printf("Please enter a root as a fraction or decimal: ");
-        scanf("%s", userRoot);
+        cout << "Please enter a root as a fraction or decimal: ";
+        string userRoot;
+        cin >> userRoot;
 
-        // Check if the input is a fraction and convert it.
         double userRootDecimal = 0.0;
-        if (strchr(userRoot, '/') != NULL) {
+        if (userRoot.find('/') != string::npos) {
             userRootDecimal = fractionToFloat(userRoot);
         } else {
-            userRootDecimal = atof(userRoot);
+            userRootDecimal = atof(userRoot.c_str());
         }
 
-        int found = 0;
+        bool found = false;
         for (int j = 0; j < degree; j++) {
             if (compareFloats(roots[j], userRootDecimal, 6) && usedRoots[j] < multiplicities[j]) {
-                found = 1;
+                found = true;
                 usedRoots[j]++;
                 correctRoots++;
                 break;
@@ -607,62 +601,60 @@ void playFindTheRoots(int degree) {
         }
 
         if (found) {
-            printf("You're correct!\n");
+            cout << "You're correct!\n";
             if (correctRoots == degree) {
-                break; // End the game early if all roots are found.
+                break;
             }
         } else {
-            printf("Uh Oh. It is incorrect. Please try again.\n");
+            cout << "Uh Oh. It is incorrect. Please try again.\n";
             score -= 5;
         }
 
-        // Display the number of attempts left.
-        if (attempts - attempt > 2){
-            printf("You have %d attempts left.\n", attempts - attempt - 1);
-        } else if (attempts - attempt == 2){
-            printf("Oh no! You only have one more attempt.\n");
+        if (attempts - attempt > 2) {
+            cout << "You have " << attempts - attempt - 1 << " attempts left.\n";
+        } else if (attempts - attempt == 2) {
+            cout << "Oh no! You only have one more attempt.\n";
         }
     }
 
-    // Display the correct roots if there were any incorrect answers.
     if (correctRoots < degree) {
-        if (degree == 1){
-            printf("The correct root is:\n");
+        if (degree == 1) {
+            cout << "The correct root is:\n";
         } else {
-        printf("The correct roots are:\n");
+            cout << "The correct roots are:\n";
         }
         for (int i = 0; i < degree; i++) {
-            if (roots[i] == (int)roots[i]) {
-                printf("x = %.0f\n", roots[i]);
+            if (roots[i] == static_cast<int>(roots[i])) {
+                cout << "x = " << static_cast<int>(roots[i]) << "\n";
             } else {
-                Fraction frac = { (int)(roots[i] * 10000), 10000 };
+                Fraction frac = { static_cast<int>(roots[i] * 10000), 10000 };
                 frac = simplify(frac);
                 displayFraction(frac);
-                printf("\n");
+                cout << "\n";
             }
         }
     }
-    system("cls");
+    system("CLS");
     if (score == 10 * degree) {
-        printf("Wow! What a fantastic score! Your final score is %d/%d.\n", score, 10 * degree);
+        cout << "Wow! What a fantastic score! Your final score is " << score << "/" << (10 * degree) << ".\n";
     } else if (score < 10 * degree && score >= (10 * degree) / 2) {
-        printf("Wow! You're getting better! Your final score is %d/%d.\n", score, 10 * degree);
+        cout << "Wow! You're getting better! Your final score is " << score << "/" << (10 * degree) << ".\n";
     } else {
-        printf("It's okay. Practice makes perfect! Your final score is %d/%d.\n", score, 10 * degree);
+        cout << "It's okay. Practice makes perfect! Your final score is " << score << "/" << (10 * degree) << ".\n";
     }
 }
 
-int getPositiveInteger(const char *prompt) {
+int getPositiveInteger(const string &prompt) {
     int value;
-    char input[20];
-    while (1) {
-        printf("%s", prompt);
-        scanf("%s", input);
-        if (sscanf(input, "%d", &value) == 1 && value > 0) {
+    string input;
+    while (true) {
+        cout << prompt;
+        cin >> input;
+        stringstream ss(input);
+        if (ss >> value && value > 0)
             break;
-        } else {
-            printf("Invalid input. Please enter a positive integer.\n");
-        }
+        else
+            cout << "Invalid input. Please enter a positive integer.\n";
     }
     return value;
 }
@@ -671,68 +663,63 @@ int main() {
     title();
     credits();
     system("pause");
-    system("cls");
+    system("CLS");
     int option;
-    printf("A pleasant day, math learners. Let's delve into polynomial functions.\n\n\n");
+    cout << "A pleasant day, math learners. Let's delve into polynomial functions.\n\n\n";
     system("pause");
 start:
-    system("cls");
-    printf("Kindly choose between the options.\n");
-    printf("Enter any whole numbers from only 1-3.\n\n");
+    system("CLS");
+    cout << "Kindly choose between the options.\n";
+    cout << "Enter any whole numbers from only 1-3.\n\n";
     menu();
     polynomialFunction();
-    printf("2. Play Find the Roots!\n");
-    printf("3. Want to donate?\n");
-    printf("4. Exit\n\n\n");
-    printf("Note: Pressing the wrong key will shutdown your computer. I'm serious. haha. =)\n");
-    scanf("%d", &option);
+    cout << "2. Play Find the Roots!\n";
+    cout << "3. Want to donate?\n";
+    cout << "4. Exit\n\n\n";
+    cout << "Note: Pressing the wrong key will shutdown your computer. I'm serious. haha. =)\n";
+    cin >> option;
     switch (option) {
         case 1: {
-            system("cls");
+            system("CLS");
             int degree = getPositiveInteger("Enter the degree of the polynomial (Your input must be a positive integer): ");
             int significantFigures = getPositiveInteger("Enter the number of significant figures (Your input must be a positive integer): ");
-
             handlePolynomial(degree, significantFigures);
-
             system("pause");
             goto start;
             break;
         }
         case 2: {
-            system("cls");
+            system("CLS");
             int degree = getPositiveInteger("Enter the degree of the polynomial (positive integer): ");
-
             playFindTheRoots(degree);
-
             system("pause");
             goto start;
             break;
         }
         case 3: {
-            system("cls");
-            printf("Mathira Mathibay is a relatively new application.\n");
-            printf("While the dream of the developers include\n");
-            printf("making math as fun and detailed as possible,\n");
-            printf("we have a limited budget to develop the app to its full potential.\n");
-            printf("Indeeed, it is our goal to help the youth\n");
-            printf("and mathematics education live up to their expectation.\n");
-            printf("We would like to ask a small favor from you.\n");
-            printf("Please donate a portion of your fund through Gcash to help us to realize this goal.\n\n");
-            printf("Maverick Jann H. Fernandez: 0945-866-0672.\n\n");
-
+            system("CLS");
+            cout << "Mathira Mathibay is a relatively new application.\n";
+            cout << "While the dream of the developers include\n";
+            cout << "making math as fun and detailed as possible,\n";
+            cout << "we have a limited budget to develop the app to its full potential.\n";
+            cout << "Indeed, it is our goal to help the youth\n";
+            cout << "and mathematics education live up to their expectation.\n";
+            cout << "We would like to ask a small favor from you.\n";
+            cout << "Please donate a portion of your fund through Gcash to help us to realize this goal.\n\n";
+            cout << "Maverick Jann H. Fernandez: 0945-866-0672.\n\n";
             system("pause");
             goto start;
+            break;
         }
         case 4: {
-            system("cls");
-            printf("Thank you for visiting our program. =)\n");
+            system("CLS");
+            cout << "Thank you for visiting our program. =)\n";
             system("pause");
             return 0;
         }
-        break;
         default: {
-            system("cls");
-            printf("It was a joke. Haha. May you have a Merry Christmas and a Happy New Year!");
+            system("CLS");
+            cout << "It was a joke. Haha. May you have a Merry Christmas and a Happy New Year!";
             system("pause");
             goto start;
             break;
