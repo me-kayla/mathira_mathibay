@@ -719,7 +719,7 @@ start:
         }
         default: {
             system("CLS");
-            cout << "It was a joke. Haha. May you have a great vacation!";
+            cout << "It was a joke. Haha. May you have a great vacation!\n\n";
             system("pause");
             goto start;
             break;
