@@ -713,7 +713,7 @@ start:
         }
         case 4: {
             system("CLS");
-            cout << "Thank you for visiting our program. =)\n";
+            cout << "Thank you for visiting our program. =)\n\n";
             system("pause");
             return 0;
         }
