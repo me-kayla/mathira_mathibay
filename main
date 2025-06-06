@@ -321,7 +321,7 @@ void handlePolynomial(int deg) {
             if (!isNumericInputValid(in) ||
                (i==deg && fractionToFloat(in)==0.0))
             {
-                cout << " Invalid input (leading coeff. should be nonzero).\n";
+                cout << "Invalid input (leading coeff. should be nonzero).\n";
                 continue;
             }
             break;
